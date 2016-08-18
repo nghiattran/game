@@ -1,5 +1,6 @@
 import pygame
 from base.movement import Movement
+from map import Map
 
 
 class Human(pygame.sprite.Sprite):
@@ -14,7 +15,6 @@ class Human(pygame.sprite.Sprite):
         self.rect.center = location
         self.movement = Movement(self)
 
-
     def update(self):
         pass
 
@@ -25,5 +25,11 @@ class Human(pygame.sprite.Sprite):
     def get_speed(self):
         return self.__speed
 
+    def set_speed(self, speed):
+        self.__speed = speed
+
     def add_move(self, destination):
         self.movement.add_move(destination=destination)
+
+    def highlight_path(self, screen):
+        self.movement.highlight(screen=screen)

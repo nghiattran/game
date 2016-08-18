@@ -26,7 +26,7 @@ from heapq import *
 import sys
 sys.path.insert(0, '..')
 
-from graph import is_walkable, InvalidMap
+from algo.graph import is_walkable, InvalidMap
 from const.constants import *
 
 class _Node(object):
