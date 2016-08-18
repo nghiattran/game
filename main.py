@@ -9,27 +9,32 @@ pygame.display.set_caption('Static')
 clock = pygame.time.Clock()
 
 crashed = False
-soldier1 = GermanSoldier()
-pos = soldier1.get_current_location()
+player = GermanSoldier((500, 500))
+ai = GermanSoldier((100, 100))
 
 all_sprites_list = pygame.sprite.Group()
-all_sprites_list.add(soldier1)
+all_sprites_list.add(player)
 
-point = soldier1.rect.center
+player.moveTo((500,500))
+point = player.rect.center
 while not crashed:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             crashed = True
 
-        if event.type == pygame.MOUSEBUTTONUP:
+        if event.type == pygame.MOUSEBUTTONUP and pygame.key.get_mods() & pygame.KMOD_SHIFT:
             pos = pygame.mouse.get_pos()
-            soldier1.moveTo((500,256))
+            player.add_move(pos)
+
+        # if event.type == pygame.MOUSEBUTTONUP:
+        #     pos = pygame.mouse.get_pos()
+        #     player.moveTo(pos)
+
+
 
     gameDisplay.fill((red))
 
-    pygame.draw.line(screen, BLUE, (500,256), soldier1.rect.center, 4)
-    pygame.draw.line(screen, BLUE, (500, 256), point, 4)
     all_sprites_list.update()
 
     pygame.display.update()
