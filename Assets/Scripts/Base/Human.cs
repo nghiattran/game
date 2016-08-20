@@ -8,7 +8,7 @@ public abstract class BaseHuman : MonoBehaviour {
 	public readonly string charName;
 
 	private static int idCount = 1;
-	// -2 means independent
+	protected Group myGroup = null;
 	private int teamId = -1;
 
 	public BaseHuman (Nationality naltionality) {
@@ -18,25 +18,26 @@ public abstract class BaseHuman : MonoBehaviour {
 
 	abstract protected void Update();
 
-	public int GetTeamId() {
-		return teamId;
+	public int GetGroupId() {
+		return myGroup.id;
+	}
+
+	public Group GetGroup() {
+		return myGroup;
 	}
 }
 
 public abstract class Human : BaseHuman {
-	protected Rigidbody2D myRigidBody;
-	protected bool isFacingRight = true;
-	protected Vector3 target;
-	protected Human followee;
-	protected Human leader;
-	protected Dictionary<int, Human> subordinates = new Dictionary<int, Human>();
+	public Rigidbody2D myRigidBody;
 	private Rect rect;
  	private Vector3 offset;
-
+	private List<Action> actions = new List<Action>();
+	
 	[SerializeField]
-	protected float movementSpeed;
+	public float movementSpeed;
 
 	public Human(Nationality naltionality): base(naltionality) {
+		// Need to be in constructor since at this time charName is already generated
 		rect = new Rect(0, 0, charName.Length * 10, 20);
 		offset = new Vector3(- charName.Length * 0.08f, 0.2f);
 	}
@@ -47,18 +48,33 @@ public abstract class Human : BaseHuman {
 		
 		// Disable rotation 
 		myRigidBody.freezeRotation = true;
+
+		InvokeRepeating("OncePerSecond", 0.0f, 1.0f);
+		InvokeRepeating("TenPerSecond", 0.0f, 0.03f);
 	}
 
-	protected void MoveTo(Vector3 target) {
-		transform.position = Vector3.Lerp(transform.position, target, movementSpeed * Time.deltaTime);
-	}
-
-	protected void UnFollow() {
-		followee = null;
+	public void MoveTo(Vector3 target) {
+		transform.position = Vector3.MoveTowards(transform.position, target, 0.4f * movementSpeed * Time.deltaTime);
 	}
 
 	public void FollowHuman(Human followee) {
-		this.followee = followee;
+		actions.Add(new FollowAction(this, followee));
+	}
+
+	public void JoinGroup(Group aGroup) {
+		myGroup = aGroup;
+		myGroup.AddMember(this);
+	}
+
+	public void JoinGroup(Human aHuman) {
+		aHuman.AddMember(this);
+	}
+
+	public void AddMember(Human aHuman) {
+		if (myGroup == null) {
+			myGroup = new Group(this);
+		}
+		myGroup.AddMember(aHuman);
 	}
 	
 	private void OnGUI(){
@@ -71,19 +87,30 @@ public abstract class Human : BaseHuman {
 	protected sealed override void Update() {
 		PreUpdate();
 		
-
-		if (this.followee != null) {
-			Follow(followee);
-		}
+		foreach (Action action in actions) {
+			action.ExecuteUpdate();
+        }
 		
 		PostUpdate();
 	}
 
-	private void Follow(Human followee) {
+	private void OncePerSecond() {
+		foreach (Action action in actions) {
+			action.Execute();
+        }
+	}
+
+	private void TenPerSecond() {
+		foreach (Action action in actions) {
+			action.ExecuteRate();
+        }
+	}
+
+	public void Follow(Human followee) {
 		Vector3 target = followee.GetPosition();
 		float distance = Vector3.Distance(target, transform.position);
 		
-		if (distance > 1) {
+		if (distance > 1.5) {
 			MoveTo(target);
 		}
 	}
@@ -92,60 +119,42 @@ public abstract class Human : BaseHuman {
 		return transform.position;
 	}
 
-	virtual protected void PreUpdate() {
-		
+	virtual protected void PreUpdate() {}
+
+	virtual protected void PostUpdate() {}
+
+	public void Check() {
+		float xCoor = 0.707f;
+		float yCoor = UnityEngine.Random.Range(-xCoor, xCoor);
+		Vector3 location = new Vector3(xCoor, yCoor, -10) + transform.position;
+		LookAtWorld(location);
 	}
 
-	virtual protected void PostUpdate() {
-		
+	public void WatchLocation(Vector3 target) {
+		actions.Add(new WatchAction(this, target));
 	}
 
-	protected void SetLeader(Human leader) {
-		this.leader = leader;
-		leader.SetSubordinate(this);
+	public void AddAction(Action action) {
+		actions.Add(action);
 	}
 
-	protected void RemoveLeader() {
-		this.leader = null;
-	}
-
-	public void SetSubordinate(Human subordinate) {
-		subordinates.Add(subordinate.id, subordinate);
-		Plan(subordinate);
-		// foreach(KeyValuePair<int, Human> entry in subordinates) {
-		// 	Debug.Log(entry.Key);
-		// }
-	}
-
-	protected void RemoveSubordinate(Human subordinate) {
-		subordinates.Remove(subordinate.id);
-		Plan(subordinate);
-	}
-
-	private void Plan(Human subordinate) {
-		Order newOrder = new FollowOrder(this, subordinate);
-		GetOrder(subordinate, newOrder);
-	}
-
-	private void GiveOrder(Human subordinate, Order order) {
-
-	}
-
-	public void GetOrder(Human leader, Order order) {
-		order.execute();
-	}
-
-	public bool IsSubordinateOf(Human ahuman) {
-		if (ahuman == leader) {
-			return true;
-		}
-		return false;
-	}
-
-	protected void LookAt (Vector3 target) {
+	public void LookAt (Vector3 target) {
 		target = target - Camera.main.WorldToScreenPoint(transform.position);
+		RotateTo(target);
+	}
+
+	public void LookAtWorld (Vector3 target) {
+		target = target - transform.position;
+		RotateTo(target);
+	}
+
+	protected void RotateTo (Vector3 target) {
 		float angle = Mathf.Atan2(target.y, target.x) * Mathf.Rad2Deg;
+		Rotate(angle);
+	}
+
+	protected void Rotate (float angle) {
 		transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-		Debug.DrawLine(transform.position, target, Color.green, 2, false);
+		// transform.Rotate(new Vector3(0, 0, angle) * Time.deltaTime);
 	}
 }

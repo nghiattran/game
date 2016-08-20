@@ -17,7 +17,6 @@ public class Player : Soldier {
 		HandleMovement();
 		LookAtMouse();
 
-
 		// if (Input.GetMouseButtonDown(0)) {
         // 	target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         // 	target.z = transform.position.z;
@@ -42,17 +41,5 @@ public class Player : Soldier {
 			return 0.3f * Mathf.Sign(axis);
 		}
 		return axis;
-	}
-
-	private void Flip () {
-		Vector2 target = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-		target = Camera.main.ScreenToWorldPoint (new Vector2 (target.x, target.y));
-		float lookRight = target.x - myRigidBody.position.x;
-		if ((lookRight > 0 && !isFacingRight) || (lookRight < 0 && isFacingRight)) {
-			isFacingRight = !isFacingRight;
-			Vector3 theScale = transform.localScale;
-			theScale.x *= -1;
-			transform.localScale = theScale;
-		}
 	}
 }

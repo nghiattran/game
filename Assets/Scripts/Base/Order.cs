@@ -5,12 +5,12 @@ public abstract class Order {
 	readonly public Human orderer;
 	readonly public Human orderee;
 	public Order (Human orderer, Human orderee) {
-		if (orderee.IsSubordinateOf(orderer)) {
-			this.orderer = orderer;
-			this.orderee = orderee;
-		} else {
-			throw new System.InvalidOperationException("Not subordinate");
-		}
+		// if (orderee.IsSubordinateOf(orderer)) {
+		// 	this.orderer = orderer;
+		// 	this.orderee = orderee;
+		// } else {
+		// 	throw new System.InvalidOperationException("Not subordinate");
+		// }
 	}
 
 	abstract public void execute();
@@ -25,7 +25,20 @@ public class FollowOrder: Order {
 	}
 
 	public override void execute() {
-		Debug.Log("followed");
 		follower.FollowHuman(followee);
 	}
 }
+
+// public class WatchOrder: Order {
+// 	private Human follower;
+// 	private Human followee;
+// 	private Vector3 location;
+	
+// 	public WatchOrder(Human orderer, Human orderee, Vector3 location): base(orderer, orderee) {
+// 		this.location = location;
+// 	}
+
+// 	public override void execute() {
+// 		orderee.WatchLocation(location);
+// 	}
+// }

@@ -13,8 +13,10 @@ public class FriendlySoldier : Soldier {
 		Soldier[] soldiers = FindObjectsOfType(typeof(Soldier)) as Soldier[];
         foreach (Soldier soldier in soldiers) {
 			if (soldier is Player) {
-				SetLeader(soldier);
+				JoinGroup(soldier);
 			}
         }
+
+		AddAction(new CheckAction(this, "e"));
 	}
 }

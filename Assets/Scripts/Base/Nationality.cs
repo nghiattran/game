@@ -6,7 +6,9 @@ public class Nationality {
 	public readonly string [] firstNames;
 	public readonly string [] lastNames;
 	public readonly string name;
-	private System.Random rand = new System.Random();
+	private static readonly System.Random random = new System.Random();
+	private static readonly object syncLock = new object();
+
 	public Nationality() {
 		// Default constructor should not be used
 		// throw;
@@ -23,16 +25,22 @@ public class Nationality {
 	}
 
 	public string RandomFirstName() {
-		return firstNames[rand.Next(0, firstNames.Length)];
+		return firstNames[RandomNumber(0, firstNames.Length)];
 	}
 
 	public string RandomLastName() {
-		return lastNames[rand.Next(0, lastNames.Length)];
+		return lastNames[RandomNumber(0, lastNames.Length)];
+	}
+
+	public static int RandomNumber(int min, int max) {
+		lock(syncLock) { // synchronize
+			return random.Next(min, max);
+		}
 	}
 }
 
 public class Vietnam: Nationality {
-	public static readonly string[] firstNames = new string[] {"Nghia", "Kha", "Thuc"};
+	public static readonly string[] firstNames = new string[] {"1", "2", "3", "4", "5", "6", "7"};
 	public static readonly string[] lastNames = new string[] {"Tran", "Nguyen", "Le"};
 	public static readonly string name = "Vietnam";
 	
@@ -40,3 +48,4 @@ public class Vietnam: Nationality {
 		
 	}
 }
+
